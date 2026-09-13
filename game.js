@@ -10,24 +10,14 @@ import {
 } from "./engine/index.js"
 
 /* =========================================================================
-   THE LAGOS EXAMINATION — CANDIDATE 09
+   THE LAGOS EXAMINATION — CANDIDATE 13
    A first-person psychological deduction mystery in a single sealed chamber.
    ========================================================================= */
 
-// ---------------------------------------------------------------------------
 // Pointer Lock safety patch — MUST run before any engine/controller code
-// attaches its own requestPointerLock() listeners.
-//
-// requestPointerLock() returns a Promise in modern browsers. In automated
-// preview runs, sandboxed iframes, cooldown windows right after Esc, or any
-// call lacking synchronous browser user-activation, that promise rejects
-// with "A user gesture is required to request Pointer Lock." If nothing
-// attaches a .catch() to it, the rejection surfaces as an unhandled
-// rejection and can crash/flag the preview session. We patch the prototype
-// once, globally, so every caller (engine-internal or ours) is safe by
-// construction, then add a belt-and-suspenders top-level unhandledrejection
-// guard that swallows only pointer-lock-shaped rejections.
-// ---------------------------------------------------------------------------
+// attaches its own requestPointerLock() listeners. Patches the prototype so
+// every caller swallows gesture-required rejections, plus a top-level
+// unhandledrejection guard for pointer-lock-shaped rejections.
 if (typeof Element !== "undefined" && Element.prototype.requestPointerLock) {
   const nativeRequestPointerLock = Element.prototype.requestPointerLock
   if (!nativeRequestPointerLock.__pointerLockPatched) {
@@ -302,7 +292,7 @@ addInteractable([0, 0.9, 9.3], "paper", "Inspect Your Exam Paper")
 // Desks & seated candidates
 // ---------------------------------------------------------------------------
 const CANDIDATES = [
-  { id: "ese", name: "Mama Ese", role: "Nigerian Federal Director", shirt: "#7f1d1d", skin: "#8a5a35", side: -1, row: 0,
+  { id: "ese", name: "Mama Ese Okiemute", role: "Nigerian Federal Director", shirt: "#7f1d1d", skin: "#8a5a35", side: -1, row: 0,
     intro: "You watch us like we are the answer. Perhaps we are, small one.",
     questions: [
       { q: "What do you think the question really is?", a: "Power always asks the same question: who will kneel first. This paper is no different.",
@@ -313,7 +303,7 @@ const CANDIDATES = [
   { id: "kofi", name: "Kofi Mensah", role: "Ghanaian Strategist", shirt: "#1e3a5c", skin: "#6b4226", side: -1, row: 1,
     intro: "Strategy is knowing which battles are already lost. This one, perhaps.",
     questions: [
-      { q: "Were you near the terminal earlier?", a: "I was. I do not touch machines, as a rule — but I wanted to see what Mama Ese was really doing there first.",
+      { q: "Were you near the terminal earlier?", a: "I was. I do not touch machines, as a rule — but I wanted to see what Mama Ese Okiemute was really doing there first.",
         clue: "kofi_denies" },
       { q: "What's your theory about the blank paper?", a: "A blank page tests what you write on it yourself, not what's given. That's the whole design, I'd wager.",
         clue: "kofi_theory" },
@@ -327,7 +317,7 @@ const CANDIDATES = [
         clue: "naliaka_obi" },
     ] },
   { id: "thandeka", name: "Thandeka Maseko", role: "SA Behavioral Strategist", shirt: "#22543d", skin: "#4a2e1c", side: -1, row: 3,
-    intro: "Everyone in this room is performing for someone. Even you, Candidate 09.",
+    intro: "Everyone in this room is performing for someone. Even you, Candidate 13.",
     questions: [
       { q: "What have you observed about the others?", a: "Fatou takes notes no one asked for. Dawit hasn't blinked at the clock once — he already knows the time doesn't matter.",
         clue: "thandeka_fatou" },
@@ -345,9 +335,9 @@ const CANDIDATES = [
   { id: "uwase", name: "Uwase Niyonzima", role: "Rwandan Tech Entrepreneur", shirt: "#1a1a2e", skin: "#5c3a24", side: 1, row: 1,
     intro: "I've pitched to harder rooms than this one. Investors, at least, admit what they want.",
     questions: [
-      { q: "Have you tried the security terminal?", a: "Yes — it wanted a passcode. I only got as far as reading a log titled 'CANDIDATE 09 — PRIOR SESSION.' There have been others before you.",
+      { q: "Have you tried the security terminal?", a: "Yes — it wanted a passcode. I only got as far as reading a log titled 'CANDIDATE 13 — PRIOR SESSION.' There have been others before you.",
         clue: "uwase_priorsession" },
-      { q: "What do you make of the water dispenser?", a: "There's a note taped behind it. Didn't dare pull it out — Mama Ese was watching me.",
+      { q: "What do you make of the water dispenser?", a: "There's a note taped behind it. Didn't dare pull it out — Mama Ese Okiemute was watching me.",
         clue: "uwase_note" },
     ] },
   { id: "fatou", name: "Fatou Ndiaye", role: "Senegalese Researcher", shirt: "#7c4a1e", skin: "#3a2415", side: 1, row: 2,
@@ -359,7 +349,7 @@ const CANDIDATES = [
         clue: "fatou_obi" },
     ] },
   { id: "obi", name: "Chief Obi", role: "Egyptian/Nigerian Investor", shirt: "#3a2a12", skin: "#4a2e1c", side: 1, row: 3,
-    intro: "Ah — Candidate 09. Or should I say... the only one they told to arrive last.",
+    intro: "Ah — Candidate 13. Or should I say... the only one they told to arrive last.",
     questions: [
       { q: "Why were you told to arrive last?", a: "I wasn't asking about you — I was told nothing. I misspoke. Forget it.",
         clue: "obi_slip" },
@@ -404,7 +394,7 @@ const candidateById = Object.fromEntries(CANDIDATES.map((c) => [c.id, c]))
 // cleanly when a dialogue/modal closes or the game restarts/ends.
 // ---------------------------------------------------------------------------
 const CHARACTER_VOICES = {
-  // Mama Ese — Nigerian woman ~63, retired Federal Director: mature,
+  // Mama Ese Okiemute — Nigerian woman ~63, retired Federal Director: mature,
   // authoritative, composed. Natural Nigerian English.
   ese: { pitch: 0.88, rate: 0.92, volume: 1.0, locales: ["en-NG", "en-ZA", "en-GB", "en-US"] },
   // Kofi Mensah — Ghanaian man ~38, corporate strategist: confident, polished,
@@ -428,9 +418,13 @@ const CHARACTER_VOICES = {
   // Chief Obi — Egyptian man ~52, international investor: distinguished,
   // controlled, persuasive, slightly mysterious. Natural Egyptian-accented English.
   obi: { pitch: 0.85, rate: 0.9, volume: 1.0, locales: ["en-EG", "en-NG", "en-GB", "en-US"] },
-  // Candidate 09 (player) — only used if player dialogue ever exists.
+  // Candidate 13 (player) — only used if player dialogue ever exists.
   // Neutral, intelligent adult voice; no unnecessary personal identity.
   player: { pitch: 1.0, rate: 1.0, volume: 1.0, locales: ["en-GB", "en-US"] },
+  // The Instructor — calm, authoritative Nigerian official; opens the exam in
+  // fluent natural Nigerian Yoruba, falling back to Nigerian/African English
+  // voices when no Yoruba voice is installed.
+  instructor: { pitch: 0.9, rate: 0.88, volume: 1.0, locales: ["yo-NG", "yo", "en-NG", "en-ZA", "en-GB", "en-US"] },
 }
 
 const speech = (typeof window !== "undefined" && window.speechSynthesis) || null
@@ -479,12 +473,8 @@ function speakDialogue(candidateId, text) {
   if (!speech || !text) return
   const profile = CHARACTER_VOICES[candidateId] || CHARACTER_VOICES.player
   try {
-    // Never play two character voices simultaneously — stop the current
-    // line cleanly before starting the next one.
     speech.cancel()
-    // Chrome drops an utterance queued synchronously right after cancel().
-    // Defer the speak by one short tick so the cancel fully flushes, then
-    // resume (unsticks a paused/frozen synthesis engine) and speak.
+    // Defer one tick so cancel() flushes before the next utterance is queued.
     setTimeout(() => {
       try {
         speech.resume()
@@ -508,7 +498,7 @@ function speakDialogue(candidateId, text) {
   }
 }
 
-// Player desk (09) marker at spawn
+// Player desk (13) marker at spawn
 const playerDesk = models.box([1.6, 0.9, 0.8], { color: "#1c2436", radius: 0.05 })
 playerDesk.position.set(0, 0.45, 9.3)
 scene.add(playerDesk)
@@ -546,7 +536,7 @@ const state = {
 }
 
 const CONTRADICTIONS = [
-  { need: ["ese_kofi", "kofi_denies"], text: "Mama Ese says Kofi lurked at the terminal; Kofi admits it but claims it was to watch HER. One of these motives is a lie." },
+  { need: ["ese_kofi", "kofi_denies"], text: "Mama Ese Okiemute says Kofi lurked at the terminal; Kofi admits it but claims it was to watch HER. One of these motives is a lie." },
   { need: ["thandeka_fatou", "fatou_obi"], text: "Thandeka and Fatou both quietly flag inconsistencies in others — yet neither has questioned themselves aloud." },
   { need: ["dawit_override", "obi_truth"], text: "Dawit claims the countdown is 'decorative' due to a disabled failsafe, matching Chief Obi's claim the whole exam is pre-decided." },
   { need: ["naliaka_obi", "obi_slip"], text: "Naliaka accuses Chief Obi of undue interest in the observers; Obi then slips and reveals he was told something about arrival order." },
@@ -572,14 +562,14 @@ root.innerHTML = `
     <div style="font-size:11px;letter-spacing:5px;text-transform:uppercase">Initializing Chamber</div>
     <div style="width:200px;height:2px;background:#141a24;overflow:hidden"><div id="boot-bar" style="height:100%;width:0%;background:#d4af37"></div></div>
     <div id="boot-status" style="font-size:10px;letter-spacing:2px;color:#8fa3cf">LOADING CHAMBER SYSTEMS... 0%</div>
-    <div style="font-size:10px;letter-spacing:2px;color:#5c6a8a">THE LAGOS EXAMINATION — CANDIDATE 09</div>
+    <div style="font-size:10px;letter-spacing:2px;color:#5c6a8a">THE LAGOS EXAMINATION — CANDIDATE 13</div>
   </div>
   <div class="le-vignette"></div>
   <div class="le-crosshair" id="le-crosshair"></div>
   <div class="le-prompt" id="le-prompt"></div>
   <div class="le-hud" id="le-hud">
     <div class="le-hud-timer" id="le-timer">15:00</div>
-    <div class="le-hud-case">CANDIDATE 09 — CASE FILE OPEN</div>
+    <div class="le-hud-case">CANDIDATE 13 — CASE FILE OPEN</div>
     <div class="le-hud-actions">
       <button class="le-btn small" id="btn-notebook" data-action="notebook">LOG [TAB]</button>
       <button class="le-btn small" id="btn-pause" data-action="pause">PAUSE</button>
@@ -589,7 +579,7 @@ root.innerHTML = `
   <div class="le-overlay le-menu hidden" id="menu-screen">
     <div class="le-menu-inner">
       <h1>THE LAGOS EXAMINATION</h1>
-      <h2>Candidate 09</h2>
+      <h2>Candidate 13</h2>
       <p class="le-tagline">One question. One room. Eight strangers. No exit until you know the truth.</p>
       <button class="le-btn primary" id="btn-start" data-action="start">ENTER THE CHAMBER</button>
       <p class="le-hint">WASD to move · Mouse to look · E to interact · TAB for case log</p>
@@ -677,17 +667,18 @@ function toast(msg) {
 function setHudVisible(v) { el("le-hud").style.display = v ? "flex" : "none" }
 setHudVisible(false)
 
+// Opening briefing: the Instructor speaks natural, authoritative Nigerian
+// Yoruba; the exact English subtitle shows synchronously. `duration` is the
+// fallback pacing (ms) when speech is muted/unsupported/has no Yoruba voice.
 const PRELUDE_LINES = [
-  "You have 15 minutes.",
-  "There is one question.",
-  "The paper is blank.",
-  "Begin.",
+  { english: "You have 60 minutes.", yoruba: "Ẹ ní ogóta ìṣẹ́jú.", duration: 3000 },
+  { english: "There is one question.", yoruba: "Ìbéèrè kan péré ló wà.", duration: 3000 },
+  { english: "The paper is blank.", yoruba: "Òfo ni bébà náà.", duration: 2800 },
+  { english: "Begin.", yoruba: "Ẹ bẹ̀rẹ̀.", duration: 2500 },
 ]
 
 function startGame() {
   if (state.phase === "playing" || state.phase === "prelude") return
-  // QA fix: a Start click landing while the boot splash is still up finishes
-  // boot immediately, so the runner never sees a dead click or frozen frame.
   finishBoot(true)
   el("menu-screen").classList.add("hidden")
   el("ending-screen").classList.add("hidden")
@@ -704,6 +695,8 @@ function clearPrelude() {
     window.removeEventListener("keydown", preludeSkipHandler, true)
     preludeSkipHandler = null
   }
+  // Cancel any active Instructor narration on skip/restart/finish.
+  stopDialogueSpeech()
 }
 
 function runPrelude() {
@@ -721,6 +714,48 @@ function runPrelude() {
     screen.classList.add("hidden")
     beginPlaying()
   }
+  // Speak one Yoruba line with the Instructor voice; advance on utterance end.
+  // A timer guard (line.duration) keeps pacing if speech is muted, unsupported,
+  // or never fires onend — speech can never stall the flow into gameplay.
+  function speakPreludeLine(line, onDone) {
+    let settled = false
+    const done = () => {
+      if (settled) return
+      settled = true
+      onDone()
+    }
+    preludeTimers.push(setTimeout(done, line.duration))
+    if (!speech) {
+      done()
+      return
+    }
+    try {
+      speech.cancel()
+      // Chrome drops utterances queued right after cancel(); defer one tick.
+      const kick = setTimeout(() => {
+        if (settled) return
+        try {
+          speech.resume()
+          const utter = new SpeechSynthesisUtterance(line.yoruba)
+          const profile = CHARACTER_VOICES.instructor
+          const voice = pickVoice(profile.locales)
+          if (voice) utter.voice = voice
+          utter.pitch = profile.pitch
+          utter.rate = profile.rate
+          utter.volume = profile.volume
+          utter.lang = voice ? voice.lang : profile.locales[0]
+          utter.onend = done
+          utter.onerror = done
+          speech.speak(utter)
+        } catch (_innerErr) {
+          // Speech is a nicety — the fallback timer still advances.
+        }
+      }, 60)
+      preludeTimers.push(kick)
+    } catch (_err) {
+      // Speech is a nicety — the fallback timer still advances.
+    }
+  }
   function next() {
     if (i >= PRELUDE_LINES.length) {
       finish()
@@ -729,15 +764,12 @@ function runPrelude() {
     textEl.textContent = ""
     textEl.classList.remove("show")
     const line = PRELUDE_LINES[i]
-    textEl.textContent = line
+    textEl.textContent = line.english
     requestAnimationFrame(() => textEl.classList.add("show"))
     i++
-    preludeTimers.push(setTimeout(next, 900))
+    speakPreludeLine(line, next)
   }
-  // QA fix (frozen boot-to-menu): any click or key press during the prelude
-  // jumps straight into active play, so automated runners never wait out the
-  // full line sequence. Registered after a short delay so the very click that
-  // pressed ENTER THE CHAMBER doesn't insta-skip the prelude.
+  // Any click/key during the prelude skips straight into active play.
   preludeTimers.push(
     setTimeout(() => {
       if (finished) return
@@ -749,12 +781,8 @@ function runPrelude() {
   next()
 }
 
-// Pointer Lock must be requested synchronously inside a genuine user gesture
-// (click/keydown handler). Requesting it from setTimeout/async callbacks
-// causes the browser to reject the returned Promise with
-// "A user gesture is required to request Pointer Lock." which then surfaces
-// as an unhandled promise rejection. This helper both guards the call and
-// swallows any rejection so it never bubbles up as an unhandled error.
+// Pointer Lock must be requested inside a genuine user gesture; this helper
+// guards the call and swallows any rejection so it never bubbles up.
 function safeRequestPointerLock() {
   try {
     const result = game.input.requestPointerLock?.()
@@ -769,23 +797,13 @@ function safeRequestPointerLock() {
 function beginPlaying() {
   state.phase = "playing"
   setHudVisible(true)
-  // NOTE: pointer lock is intentionally NOT requested here. This function is
-  // reached via a setTimeout chain in runPrelude(), which has no active user
-  // gesture. Pointer lock is instead requested from the canvas click handler
-  // below, and from resume/close-modal handlers which run inside real click
-  // events.
+  // NOTE: no pointer lock here (reached via prelude timers, no user gesture);
+  // it is requested from real click handlers instead.
 }
 
-// Any direct click on the game canvas while playing is a valid user gesture -
-// use it to (re)acquire pointer lock.
 game.renderer?.domElement?.addEventListener("click", () => {
   if (state.phase === "playing" && !isModalOpen()) safeRequestPointerLock()
 })
-
-// NOTE: the global Element.prototype.requestPointerLock patch and the
-// top-level unhandledrejection guard live at the very top of this file
-// (before any engine code initializes) so they cover every caller,
-// including the engine's own internal listeners.
 
 function pauseGame() {
   if (state.phase !== "playing") return
@@ -928,7 +946,7 @@ function renderNotebook(tab = "overview") {
   const body = el("notebook-body")
   if (tab === "overview") {
     body.innerHTML = `
-      <p>You are Candidate 09. Eight strangers sit around this sealed chamber under one blank exam paper and a ticking clock. Nothing here is what it claims to be.</p>
+      <p>You are Candidate 13. Eight strangers sit around this sealed chamber under one blank exam paper and a ticking clock. Nothing here is what it claims to be.</p>
       <p>Talk to every candidate. Inspect the room. Find the contradictions. When you are certain, approach the <b>Judgment Terminal</b> beside the monolith.</p>
       <p>Clues logged: <b>${state.clues.size}</b> · Candidates interviewed: <b>${state.talkedTo.size}</b> / 8</p>
     `
@@ -972,9 +990,9 @@ document.querySelectorAll(".le-tab").forEach((tab) => {
 // ---------------------------------------------------------------------------
 const TERMINAL_PAGES = [
   `SECURITY LOG — PAGE 1/3
-Access granted. Candidate roster loaded: 8 active + Candidate 09 (observer-flagged).`,
+Access granted. Candidate roster loaded: 8 active + Candidate 13 (observer-flagged).`,
   `SECURITY LOG — PAGE 2/3
-NOTE: 'Candidate 09' role differs from others. Directive: monitor decision-making, not exam performance.`,
+NOTE: 'Candidate 13' role differs from others. Directive: monitor decision-making, not exam performance.`,
   `SECURITY LOG — PAGE 3/3
 CABINET PASSCODE HINT: matches the watermark found on official exam paper stock.`,
 ]
@@ -992,13 +1010,13 @@ function inspectTerminal() {
     nextB.onclick = () => { terminalPage = Math.min(TERMINAL_PAGES.length - 1, terminalPage + 1); inspectTerminal() }
     opts.append(prev, nextB)
   })
-  addClue("terminal_log", "Security terminal logs reveal Candidate 09 is monitored differently than the others.")
+  addClue("terminal_log", "Security terminal logs reveal Candidate 13 is monitored differently than the others.")
 }
 
 function inspectCabinet() {
   if (state.cabinetUnlocked) {
-    openInspect("Evidence Cabinet", "Inside: sealed personnel files for all eight candidates, and one thin folder marked 'CANDIDATE 09 — DO NOT DISCLOSE.' You are the subject of this exam, not merely a participant.")
-    addClue("cabinet_open", "The evidence cabinet held a hidden dossier — Candidate 09 was the true subject of the exam all along.")
+    openInspect("Evidence Cabinet", "Inside: sealed personnel files for all eight candidates, and one thin folder marked 'CANDIDATE 13 — DO NOT DISCLOSE.' You are the subject of this exam, not merely a participant.")
+    addClue("cabinet_open", "The evidence cabinet held a hidden dossier — Candidate 13 was the true subject of the exam all along.")
     return
   }
   const hasCode = state.clues.has("naliaka_code")
@@ -1070,7 +1088,7 @@ const JUDGMENT_STEPS = [
     ],
   },
   {
-    prompt: "STEP 3 — What is Candidate 09's final action?",
+    prompt: "STEP 3 — What is Candidate 13's final action?",
     options: [
       { label: "Submit a written answer and play by their rules.", key: "submit" },
       { label: "Expose the observation deck and refuse to comply.", key: "expose" },
@@ -1124,7 +1142,7 @@ function finalizeJudgment() {
     text = "You fill the blank paper with the safest possible answer and hand it in. The room approves. You are congratulated, promoted, absorbed — and you will never know if you passed the real exam or simply agreed to stop asking questions."
   } else {
     title = "ENDING: DISQUALIFIED"
-    text = "Your theory doesn't hold together. The monolith flickers red. 'INCONSISTENT REASONING — RE-EXAMINATION REQUIRED.' The door seals. You were close, Candidate 09. Not close enough."
+    text = "Your theory doesn't hold together. The monolith flickers red. 'INCONSISTENT REASONING — RE-EXAMINATION REQUIRED.' The door seals. You were close, Candidate 13. Not close enough."
   }
   state.ending = { title, text }
   triggerGameOver()
@@ -1213,13 +1231,12 @@ function finishBoot(immediate = false) {
       setTimeout(() => bootScreen.remove(), 350)
     }
   }
-  // Reveal the menu only once the boot splash has begun fading (or is gone),
-  // so the boot moment stays visually distinct from the menu in frame
-  // captures, while the menu itself is up well inside the runner's budget.
-  setTimeout(
-    () => el("menu-screen")?.classList.remove("hidden"),
-    immediate ? 0 : 150
-  )
+  // QA fix: reveal the menu only while still in the menu phase. When
+  // startGame() (e.g. __GAME_BUS__.emit("start")) calls finishBoot(true),
+  // this deferred timeout used to re-show the menu over the prelude.
+  setTimeout(() => {
+    if (state.phase === "menu") el("menu-screen")?.classList.remove("hidden")
+  }, immediate ? 0 : 150)
 }
 
 function bootTick() {
