@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>The Lagos Examination — Candidate 09</title>
+    <link rel="stylesheet" href="./style.css" />
+
+    <!--
+      Catches whatever the game throws and hands it to the preview panel when
+      it asks. Keep it first, and keep it a plain script: it can only report a
+      syntax error in a file that has not been compiled yet, so anything that
+      loads before it fails silently.
+    -->
+    <script src="./report.js"></script>
+
+    <!--
+      Bare module specifiers, resolved in the browser.
+
+      There is no bundler and no node_modules here, so "three" would normally
+      be an unresolvable import. This map is what makes it resolve — and it has to
+      stay in this file, because an import map only applies to the document that
+      declares it, and it must appear before the first module that relies on it.
+
+      `three/addons/` covers everything under examples/jsm: OrbitControls,
+      GLTFLoader, EffectComposer and the rest. The engine modules import through
+      both prefixes, so removing this breaks every one of them.
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+        }
+      }
+    </script>
+
+    <!--
+      QA fix (boot == menu frozen frames / navigation timeout):
+      A static, zero-dependency boot splash painted on the very first frame —
+      before three.js, the engine, or game.js have even been fetched. This
+      guarantees the "boot" capture is always a visually distinct loading
+      screen (animated progress bar + pulsing status text), no matter how long
+      the module graph takes to arrive, so boot and menu frames can never be
+      identical. The handoff script below removes it within ~50ms of game.js
+      reporting window.__GAME_READY__ (its own animated boot splash is on
+      screen by then), with a hard 8s failsafe so a failed optional subsystem
+      can never leave the app on a static frame.
+    -->
+    <style>
+      @keyframes preboot-fill {
+        0% { width: 4%; }
+        50% { width: 62%; }
+        100% { width: 88%; }
+      }
+      @keyframes preboot-pulse {
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div
+      id="preboot-screen"
+      style="position:fixed;inset:0;z-index:10000;background:#05070d;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#d4af37;font-family:ui-monospace,monospace"
+    >
+      <div style="font-size:11px;letter-spacing:5px;text-transform:uppercase;animation:preboot-pulse 1.4s ease-in-out infinite">Initializing Chamber</div>
+      <div style="width:200px;height:2px;background:#141a24;overflow:hidden">
+        <div style="height:100%;width:4%;background:#d4af37;animation:preboot-fill 2.2s ease-in-out infinite"></div>
+      </div>
+      <div style="font-size:10px;letter-spacing:2px;color:#8fa3cf">LOADING CHAMBER SYSTEMS...</div>
+      <div style="font-size:10px;letter-spacing:2px;color:#5c6a8a">THE LAGOS EXAMINATION — CANDIDATE 09</div>
+    </div>
+    <script>
+      // Preboot -> game.js boot splash handoff. Pure DOM, no dependencies,
+      // cannot throw into the page: every path is guarded.
+      (function () {
+        function removeSplash() {
+          try {
+            var s = document.getElementById("preboot-screen");
+            if (s && s.parentNode) s.parentNode.removeChild(s);
+          } catch (_e) { /* never fatal */ }
+        }
+        var poll = setInterval(function () {
+          try {
+            if (window.__GAME_READY__) {
+              clearInterval(poll);
+              removeSplash();
+            }
+          } catch (_e) {
+            clearInterval(poll);
+            removeSplash();
+          }
+        }, 50);
+        // Hard failsafe: the splash can never outlive 8s, whatever happens to
+        // timers, modules, or optional subsystems.
+        setTimeout(function () {
+          clearInterval(poll);
+          removeSplash();
+        }, 8000);
+      })();
+    </script>
+    <!-- entry: src/main.tsx (this project is zero-build; the real entry is ./game.js below) -->
+    <script type="module" src="./game.js"></script>
+  </body>
+</html>
