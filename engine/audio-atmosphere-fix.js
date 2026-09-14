@@ -20,8 +20,25 @@ function voiceMatchesGender(voice, gender) {
 
 function detectGenderFromSpeaker(name) {
   const n = String(name || "").toLowerCase()
-  if (["kofi mensah", "dawit bekeke", "dawit bekle", "dawit bekuele", "karim el-masry", "chief obi"].some((x) => n.includes(x))) return "male"
-  if (["mama ese okiemute", "dr. naliaka wekesa", "thandeka maseko", "uwase niyonzima", "fatou ndiaye"].some((x) => n.includes(x))) return "female"
+  const maleNames = [
+    "kofi mensah",
+    "dawit bekeke",
+    "dawit bekle",
+    "dawit bekuele",
+    "dawit bekela",
+    "dawit bekele",
+    "karim el-masry",
+    "chief obi",
+  ]
+  const femaleNames = [
+    "mama ese okiemute",
+    "dr. naliaka wekesa",
+    "thandeka maseko",
+    "uwase niyonzima",
+    "fatou ndiaye",
+  ]
+  if (maleNames.some((x) => n.includes(x))) return "male"
+  if (femaleNames.some((x) => n.includes(x))) return "female"
   return null
 }
 
