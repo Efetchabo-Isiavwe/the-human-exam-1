@@ -106,6 +106,8 @@
     </script>
     <!-- entry: src/main.tsx (this project is zero-build; the real entry is ./game.js below) -->
     <script type="module" src="./game.js"></script>
+    <!-- Runtime audio/name/voice polish. Does not alter game architecture. -->
+    <script type="module" src="./engine/audio-atmosphere-fix.js"></script>
     <!-- Central Monolith immersive upgrade (plan.md): attaches to the running
          game via window.__GAME__ after game.js has executed. -->
     <script type="module" src="./monolith-upgrade.js"></script>
